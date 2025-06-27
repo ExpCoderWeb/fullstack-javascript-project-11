@@ -4,7 +4,7 @@
   "description": "RSS feeds aggregator",
   "main": "src/js/main.js",
   "scripts": {
-    "lint": "npx eslint .",
+    "lint": "eslint .",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -20,6 +20,11 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "bootstrap": "^5.3.6"
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.6",
+    "i18next": "^25.2.1",
+    "lodash": "^4.17.21",
+    "on-change": "^5.0.1",
+    "yup": "^1.6.1"
   }
 }
