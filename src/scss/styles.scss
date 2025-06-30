@@ -1,5 +1,9 @@
 @use "bootstrap/scss/bootstrap";
 
+html {
+  scrollbar-gutter: stable;
+}
+
 .text-muted {
   color: rgb(215 218 224 / 75%) !important;
 }
