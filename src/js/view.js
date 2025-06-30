@@ -109,7 +109,9 @@ const renderPosts = (elements, i18n, state) => {
     a.textContent = postTitle
 
     a.addEventListener('click', (e) => {
+      console.log('viewedPostsIds before click:', state.uiState.viewedPostsIds)
       handleCheckPost(state, e)
+      console.log('viewedPostsIds after click:', state.uiState.viewedPostsIds)
     })
 
     const button = document.createElement('button')
@@ -121,8 +123,14 @@ const renderPosts = (elements, i18n, state) => {
     button.textContent = i18n.t('postPreviewButton')
 
     button.addEventListener('click', (e) => {
+      console.log('viewedPostsIds before click:', state.uiState.viewedPostsIds)
+      console.log('openedPostId before click:', state.uiState.modal.openedPostId)
+
       handleCheckPost(state, e)
       state.uiState.modal.openedPostId = postId
+
+      console.log('viewedPostsIds after click:', state.uiState.viewedPostsIds)
+      console.log('openedPostId after click:', state.uiState.modal.openedPostId)
     })
 
     li.append(a, button)
