@@ -142,10 +142,12 @@ const renderPosts = (elements, i18n, state) => {
 const handleCheckPost = (state, event) => {
   const { viewedPostsIds } = state.uiState
   const { id } = event.target.dataset
+  console.log('handleCheckPost viewedPostsIds before click:', viewedPostsIds)
   if (viewedPostsIds.includes(id)) {
     return
   }
   viewedPostsIds.push(id)
+  console.log('handleCheckPost viewedPostsIds after click:', viewedPostsIds)
 }
 
 const renderCheckedPost = (state) => {
