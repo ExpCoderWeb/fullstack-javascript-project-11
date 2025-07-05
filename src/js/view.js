@@ -114,7 +114,7 @@ const renderPosts = (elements, i18n, state) => {
 
     const button = document.createElement('button')
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm')
-    button.setAttribute('type', 'submit')
+    button.setAttribute('type', 'button')
     button.setAttribute('data-id', postId)
     button.setAttribute('data-bs-toggle', 'modal')
     button.setAttribute('data-bs-target', '#modal')
