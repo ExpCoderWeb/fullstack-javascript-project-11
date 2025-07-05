@@ -67,7 +67,9 @@ export default () => {
     },
   }
 
-  const watchedState = onChange(initialState, render(elements, i18nInstance, initialState))
+  const watchedState = onChange(initialState, (path, value) => {
+    render(elements, i18nInstance, watchedState, path, value)
+  })
   runUpdatingPosts(watchedState)
 
   elements.form.addEventListener('submit', (e) => {
