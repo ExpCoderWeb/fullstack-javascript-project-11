@@ -155,13 +155,13 @@ const renderModalContent = (elements, state) => {
   elements.modalReadMoreButton.href = postLink
 }
 
-const render = (elements, i18n, state) => (path, value) => {
-  switch (path) {
+const render = (elements, i18n, state, onChangePath, onChangeValue) => {
+  switch (onChangePath) {
     case 'form.processState':
-      handleProcessState(elements, i18n, value)
+      handleProcessState(elements, i18n, onChangeValue)
       break
     case 'form.errorKey':
-      renderErrors(elements, i18n, value)
+      renderErrors(elements, i18n, onChangeValue)
       break
     case 'feeds':
       renderFeeds(elements, i18n, state)
