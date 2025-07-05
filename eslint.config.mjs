@@ -12,9 +12,6 @@ export default defineConfig([
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node,
-        __dirname: 'readonly',
-        __filename: 'readonly',
       },
     },
   },
