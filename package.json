@@ -2,7 +2,8 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "RSS feeds aggregator",
-  "main": "src/js/main.js",
+  "type": "module",
+  "main": "src/js/init.js",
   "scripts": {
     "lint": "eslint .",
     "dev": "vite",
