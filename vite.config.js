@@ -1,11 +1,11 @@
-import { resolve } from 'path'
+import path from 'node:path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = resolve(__filename, '..')
+const __dirname = path.dirname(__filename)
 
 export default {
-  root: resolve(__dirname, 'src'),
+  root: path.resolve(__dirname),
   build: {
     outDir: '../dist',
     emptyOutDir: true,
