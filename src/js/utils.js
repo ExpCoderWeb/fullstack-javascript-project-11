@@ -1,6 +1,7 @@
 import axios from 'axios'
 import uniqueId from 'lodash/uniqueId.js'
 import { string, setLocale } from 'yup'
+import parseRss from './parser.js'
 
 const createSchema = (rssLinks) => {
   return string().required().url().notOneOf(rssLinks)
@@ -23,37 +24,6 @@ const getProxiedUrl = (url) => {
   proxiedUrl.searchParams.set('url', url)
   proxiedUrl.searchParams.set('disableCache', 'true')
   return proxiedUrl.toString()
-}
-
-const parseRss = (rss) => {
-  const parser = new DOMParser()
-  const xmlDocument = parser.parseFromString(rss, 'text/xml')
-  const errorNode = xmlDocument.querySelector('parsererror')
-  if (errorNode) {
-    throw new Error('formFeedback.errors.validation.noRss')
-  }
-
-  const titleEl = xmlDocument.querySelector('title')
-  const descriptionEl = xmlDocument.querySelector('description')
-
-  const items = [...xmlDocument.querySelectorAll('item')].map((item) => {
-    const itemTitleEl = item.querySelector('title')
-    const itemDescriptionEl = item.querySelector('description')
-    const itemLinkEl = item.querySelector('link')
-    return {
-      title: itemTitleEl.textContent,
-      description: itemDescriptionEl.textContent,
-      link: itemLinkEl.textContent,
-    }
-  })
-
-  return {
-    channel: {
-      title: titleEl.textContent,
-      description: descriptionEl.textContent,
-    },
-    items,
-  }
 }
 
 const getNewPosts = (posts, feedId, state) => {
@@ -102,10 +72,12 @@ const updatePosts = (rssLink, state) => {
       if (newPosts.length === 0) {
         return
       }
-      state.posts.allPosts = state.posts.allPosts.concat(newPosts)
-      state.posts.newPosts = newPosts
+      Object.assign(state.posts, {
+        allPosts: state.posts.allPosts.concat(newPosts),
+        newPosts,
+      })
     })
-    .catch(() => {})
+    .catch(error => console.error(error))
 }
 
 const addFeed = (rssLink, state) => {
@@ -113,17 +85,27 @@ const addFeed = (rssLink, state) => {
     .then(({ newFeed, newPosts }) => {
       state.rssLinks.push(rssLink)
       state.feeds.push(newFeed)
-      state.posts.allPosts = state.posts.allPosts.concat(newPosts)
-      state.posts.newPosts = newPosts
-      state.form.errorKey = null
-      state.form.processState = 'added'
+      Object.assign(state.form, { status: 'valid', errorKey: null })
+      Object.assign(state.loadingProcess, { status: 'success', errorKey: null })
+      Object.assign(state.posts, {
+        allPosts: state.posts.allPosts.concat(newPosts),
+        newPosts,
+      })
     })
 }
 
 const runUpdatingPosts = (state) => {
   const promises = state.rssLinks.map(rssLink => updatePosts(rssLink, state))
-  return Promise.allSettled(promises)
+  Promise.allSettled(promises)
     .then(() => setTimeout(() => runUpdatingPosts(state), 5000))
+}
+
+const handleCheckPost = (state, targetElementId) => {
+  const { viewedPostsIds } = state.uiState
+  if (viewedPostsIds.includes(targetElementId)) {
+    return
+  }
+  viewedPostsIds.push(targetElementId)
 }
 
 export {
@@ -131,4 +113,5 @@ export {
   setYupLocale,
   addFeed,
   runUpdatingPosts,
+  handleCheckPost,
 }
