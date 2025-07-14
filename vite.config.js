@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename)
 export default {
   root: path.resolve(__dirname),
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
   },
   server: {
