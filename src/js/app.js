@@ -1,7 +1,7 @@
 import i18n from 'i18next'
 import onChange from 'on-change'
 import resources from './locales/index.js'
-import { initialRender, render } from './view.js'
+import { initialRender, render } from './watchers.js'
 import {
   createSchema,
   setYupLocale,
