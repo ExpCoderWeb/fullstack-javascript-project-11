@@ -1,3 +1,14 @@
+const initialRender = (initialElements, i18n) => {
+  Object.entries(initialElements).forEach(([elementName, element]) => {
+    if (elementName === 'urlInput') {
+      element.setAttribute('placeholder', i18n.t(elementName))
+      return
+    }
+    const textNode = document.createTextNode(i18n.t(elementName))
+    element.prepend(textNode)
+  })
+}
+
 const createInnerContainer = (entityName, i18n) => {
   const innerContainer = document.createElement('div')
   innerContainer.classList.add('card', 'border-0')
@@ -32,20 +43,28 @@ const insertChildren = (elements, entityName, children, i18n) => {
   }
 }
 
-const initialRender = (initialElements, i18n) => {
-  Object.entries(initialElements).forEach(([elementName, element]) => {
-    if (elementName === 'urlInput') {
-      element.setAttribute('placeholder', i18n.t(elementName))
-      return
-    }
-    const textNode = document.createTextNode(i18n.t(elementName))
-    element.prepend(textNode)
-  })
+const handleFormStatus = (elements, status) => {
+  switch (status) {
+    case 'validating':
+      elements.addUrlButton.disabled = true
+      break
+    case 'invalid':
+    case 'filling':
+      elements.addUrlButton.disabled = false
+      break
+    case 'valid':
+      break
+    default:
+      throw new Error(`Unknown form status: ${status}`)
+  }
 }
 
-const handleProcessState = (elements, i18n, processState) => {
-  switch (processState) {
-    case 'added':
+const handleLoadingProcessStatus = (elements, i18n, status) => {
+  switch (status) {
+    case 'loading':
+      elements.addUrlButton.disabled = true
+      break
+    case 'success':
       elements.form.reset()
       elements.urlInput.focus()
       elements.urlInput.classList.remove('is-invalid')
@@ -54,17 +73,11 @@ const handleProcessState = (elements, i18n, processState) => {
       elements.formFeedback.textContent = i18n.t('formFeedback.success')
       elements.addUrlButton.disabled = false
       break
-    case 'error':
-      elements.addUrlButton.disabled = false
-      break
-    case 'adding':
-      elements.addUrlButton.disabled = true
-      break
-    case 'filling':
+    case 'failed':
       elements.addUrlButton.disabled = false
       break
     default:
-      throw new Error(`Unknown process state: ${processState}`)
+      throw new Error(`Unknown loading process status: ${status}`)
   }
 }
 
@@ -91,7 +104,6 @@ const renderFeeds = (elements, i18n, state) => {
   p.textContent = feedDescription
 
   li.append(h3, p)
-
   insertChildren(elements, 'feeds', li, i18n)
 }
 
@@ -108,10 +120,6 @@ const renderPosts = (elements, i18n, state) => {
     a.setAttribute('rel', 'noopener noreferrer')
     a.textContent = postTitle
 
-    a.addEventListener('click', (e) => {
-      handleCheckPost(state, e)
-    })
-
     const button = document.createElement('button')
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm')
     button.setAttribute('type', 'button')
@@ -120,48 +128,38 @@ const renderPosts = (elements, i18n, state) => {
     button.setAttribute('data-bs-target', '#modal')
     button.textContent = i18n.t('postPreviewButton')
 
-    button.addEventListener('click', (e) => {
-      handleCheckPost(state, e)
-      state.uiState.modal.openedPostId = postId
-    })
-
     li.append(a, button)
     return li
   })
   insertChildren(elements, 'posts', postsElements, i18n)
 }
 
-const handleCheckPost = (state, event) => {
-  const { viewedPostsIds } = state.uiState
-  const { id } = event.target.dataset
-  if (viewedPostsIds.includes(id)) {
-    return
-  }
-  viewedPostsIds.push(id)
-}
-
 const renderCheckedPost = (state) => {
   const checkedPostId = state.uiState.viewedPostsIds.at(-1)
-  const checkedPost = document.querySelector(`[data-posts] a[data-id="${checkedPostId}"]`)
+  const checkedPost = document.querySelector(`[data-posts-container] a[data-id="${checkedPostId}"]`)
   checkedPost.classList.remove('fw-bold')
   checkedPost.classList.add('fw-normal', 'link-secondary')
 }
 
 const renderModalContent = (elements, state) => {
-  const openedPost = state.posts.allPosts.find(({ postId }) => postId === state.uiState.modal.openedPostId)
+  const openedPost = state.posts.allPosts.find(({ postId }) => postId === state.uiState.modalOpenedPostId)
   const { postTitle, postDescription, postLink } = openedPost
   elements.modalPostTitle.textContent = postTitle
   elements.modalPostDescription.textContent = postDescription
   elements.modalReadMoreButton.href = postLink
 }
 
-const render = (elements, i18n, state, onChangePath, onChangeValue) => {
-  switch (onChangePath) {
-    case 'form.processState':
-      handleProcessState(elements, i18n, onChangeValue)
+const render = (elements, i18n, state) => (path, value) => {
+  switch (path) {
+    case 'form.status':
+      handleFormStatus(elements, value)
+      break
+    case 'loadingProcess.status':
+      handleLoadingProcessStatus(elements, i18n, value)
       break
     case 'form.errorKey':
-      renderErrors(elements, i18n, onChangeValue)
+    case 'loadingProcess.errorKey':
+      renderErrors(elements, i18n, value)
       break
     case 'feeds':
       renderFeeds(elements, i18n, state)
@@ -172,7 +170,7 @@ const render = (elements, i18n, state, onChangePath, onChangeValue) => {
     case 'uiState.viewedPostsIds':
       renderCheckedPost(state)
       break
-    case 'uiState.modal.openedPostId':
+    case 'uiState.modalOpenedPostId':
       renderModalContent(elements, state)
       break
     default:
